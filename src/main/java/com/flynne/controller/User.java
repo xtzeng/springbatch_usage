@@ -1,4 +1,4 @@
-
+package com.flynne.controller;
 
 /**
  * @author <a href="mailto:chenxilzx1@gmail.com">theonefx</a>

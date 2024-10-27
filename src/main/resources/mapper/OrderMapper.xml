@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.flynne.mapper.OrderMapper">
+
+    <!-- Insert a new order -->
+    <insert id="insert" parameterType="com.flynne.model.Order">
+        INSERT INTO t_order (user_id, amount)
+        VALUES (#{userId}, #{amount})
+    </insert>
+
+    <!-- Select an order by ID -->
+    <select id="selectById" parameterType="long" resultType="com.flynne.model.Order">
+        SELECT *
+        FROM t_order
+        WHERE id = #{id}
+    </select>
+
+    <!-- Select all orders -->
+    <select id="selectAll" resultType="com.flynne.model.Order">
+        SELECT *
+        FROM t_order
+    </select>
+
+    <!-- Update an existing order -->
+    <update id="update" parameterType="com.flynne.model.Order">
+        UPDATE t_order
+        SET user_id = #{userId}, amount = #{amount}
+        WHERE id = #{id}
+    </update>
+
+    <!-- Delete an order by ID -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM t_order
+        WHERE id = #{id}
+    </delete>
+
+</mapper>
