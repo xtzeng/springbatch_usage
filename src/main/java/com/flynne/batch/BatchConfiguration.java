@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.sql.DataSource;
@@ -50,23 +49,26 @@ public class BatchConfiguration {
 
     @Bean
     @StepScope // Ensure this is a step-scoped bean
-    public MyBatisCursorItemReader<Order> reader(@Value("#{jobParameters['param1']}") String param1,
-                                                 @Value("#{jobParameters['param2']}") String param2) throws Exception {
+    public MyBatisCursorItemReader<Order> reader(@Value("#{jobParameters['date']}") String date) throws Exception {
         Map<String, Object> params = new HashMap<>();
-        params.put("param1", param1);
-        params.put("param2", param2);
+        params.put("date", date);
 
         return new MyBatisCursorItemReaderBuilder<Order>()
                 .sqlSessionFactory(sqlSessionFactory(null)) // Call without null
                 .queryId("com.flynne.mapper.OrderMapper.selectAll")
-//                .parameterValues(params)
+                .parameterValues(params) // Uncomment to use parameters
                 .build();
     }
 
     @Bean
     public ItemProcessor<Order, Order> processor() {
         return order -> {
-            order.setAmount(order.getAmount().multiply(new BigDecimal("0.9"))); // Apply a 10% discount
+            BigDecimal originalAmount = order.getAmount();
+            order.setAmount(originalAmount.multiply(new BigDecimal("0.9"))); // Apply a 10% discount
+
+            // Optionally log the processing step
+            System.out.println("Processed Order ID: " + order.getId() + ", Original Amount: " + originalAmount + ", New Amount: " + order.getAmount());
+
             return order;
         };
     }
@@ -83,7 +85,7 @@ public class BatchConfiguration {
     public Step step1() throws Exception {
         return stepBuilderFactory.get("step1")
                 .<Order, Order>chunk(10)
-                .reader(reader(null, null)) // This will now correctly resolve at runtime
+                .reader(reader(null)) // This will now correctly resolve at runtime
                 .processor(processor())
                 .writer(writer())
                 .build();
